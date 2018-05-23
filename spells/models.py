@@ -14,6 +14,7 @@ class Spellbook(models.Model):
     )
 
     user = models.ForeignKey('user.User', on_delete=models.CASCADE, default=DEFAULT_USER_ID)
+    spells = models.ManyToManyField('spells.Spell')
 
 
 class Spell(models.Model):
