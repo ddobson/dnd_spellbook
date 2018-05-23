@@ -1,5 +1,5 @@
 from rest_framework.serializers import ModelSerializer
-from spells.models import Spell
+from spells.models import (Spellbook, Spell)
 
 
 class SpellSerializer(ModelSerializer):
@@ -7,16 +7,31 @@ class SpellSerializer(ModelSerializer):
         model = Spell
         fields = (
             'id',
-            'casting_time',
-            'classes',
-            'components',
-            'description',
-            'higher_levels',
-            'duration',
-            'level',
             'name',
+            'classes',
+            'level',
+            'school',
+            'duration',
+            'casting_time',
+            'components',
             'spell_range',
             'ritual',
-            'school',
+            'description',
+            'higher_levels',
             'spell_type',
+        )
+
+
+class SpellbookSerializer(ModelSerializer):
+    spells = SpellSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Spellbook
+        fields = (
+            'id',
+            'name',
+            'description',
+            'classes',
+            'user',
+            'spells',
         )
