@@ -1,0 +1,26 @@
+[
+  {
+    "model": "user.user",
+    "pk": 1,
+    "fields": {
+      "password": "pbkdf2_sha256$100000$beGaboVCXgik$SgJEbqsMxiES7MvM9Ro16wfZmp2pWdu8vKxL2AvM0n0=",
+      "last_login": null,
+      "email": "ordingary_user@email.com",
+      "is_active": true,
+      "is_admin": false,
+      "jwt_secret": "fa2acf5a-8e5e-412f-89ce-0652c27f3b27"
+    }
+  },
+  {
+    "model": "user.user",
+    "pk": 2,
+    "fields": {
+      "password": "pbkdf2_sha256$100000$2QLlI60uFXE5$AfBSfjC4O+k/q7et0VE/cO5Ew4if7uNpjiq5gFEWX4Q=",
+      "last_login": null,
+      "email": "super_user@email.com",
+      "is_active": true,
+      "is_admin": true,
+      "jwt_secret": "7eeba6ef-9e6b-4f57-980e-dc32ec7bd896"
+    }
+  }
+]
