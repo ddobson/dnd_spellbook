@@ -16,6 +16,9 @@ class Spellbook(models.Model):
     user = models.ForeignKey('user.User', on_delete=models.CASCADE, default=DEFAULT_USER_ID)
     spells = models.ManyToManyField('spells.Spell')
 
+    class Meta:
+        ordering = ['id']
+
 
 class Spell(models.Model):
     casting_time = models.CharField(blank=True, null=True, max_length=128)
