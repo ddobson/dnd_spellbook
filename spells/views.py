@@ -1,6 +1,11 @@
-from rest_framework.viewsets import (ModelViewSet, ReadOnlyModelViewSet)
-from spells.models import (Spellbook, Spell)
-from spells.serializers import (SpellbookSerializer, SpellSerializer)
+from django.core.exceptions import ValidationError
+from rest_framework import status
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
+from spells.models.spell import Spell
+from spells.models.spellbook import Spellbook
+from spells.serializers import SpellbookSerializer, SpellSerializer
 
 
 class SpellbookView(ModelViewSet):
@@ -8,6 +13,36 @@ class SpellbookView(ModelViewSet):
 
     def get_queryset(self):
         return Spellbook.objects.filter(user=self.request.user)
+
+    @action(methods=['post'], detail=True)
+    def add_spell(self, request, pk=None):
+        return self._add_or_remove_spell(request, 'add')
+
+    @action(methods=['delete'], detail=True)
+    def remove_spell(self, request, pk=None):
+        return self._add_or_remove_spell(request, 'remove')
+
+    def _add_or_remove_spell(self, request, action):
+        spellbook = self.get_object()
+
+        try:
+            spell = Spell.objects.get(pk=request.data['id'])
+            if action == 'add':
+                spellbook.spells.add(spell)
+                return Response(status=status.HTTP_201_CREATED)
+            elif action == 'remove':
+                spellbook.spells.remove(spell)
+                return Response(status=status.HTTP_204_NO_CONTENT)
+        except (Spell.DoesNotExist, ValidationError) as error:
+            if isinstance(error, Spell.DoesNotExist):
+                error_message = "Spell with ID `{}` does not exist.".format(request.data['id'])
+            else:
+                error_message = error.message
+
+            return Response(
+                data={'error': error_message},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
 
 class SpellView(ReadOnlyModelViewSet):

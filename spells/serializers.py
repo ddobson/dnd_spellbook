@@ -1,5 +1,6 @@
 from rest_framework.serializers import (CurrentUserDefault, HiddenField, ModelSerializer)
-from spells.models import (Spellbook, Spell)
+from spells.models.spell import Spell
+from spells.models.spellbook import Spellbook
 
 
 class SpellSerializer(ModelSerializer):
