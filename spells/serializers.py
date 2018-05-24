@@ -1,4 +1,4 @@
-from rest_framework.serializers import ModelSerializer
+from rest_framework.serializers import (CurrentUserDefault, HiddenField, ModelSerializer)
 from spells.models import (Spellbook, Spell)
 
 
@@ -23,7 +23,17 @@ class SpellSerializer(ModelSerializer):
 
 
 class SpellbookSerializer(ModelSerializer):
-    spells = SpellSerializer(many=True, read_only=True)
+    user = HiddenField(default=CurrentUserDefault())
+
+    def __init__(self, *args, **kwargs):
+        super(SpellbookSerializer, self).__init__(*args, **kwargs)
+
+        request = kwargs['context']['request']
+        include_spells = request.GET.get('include_spells', False)
+
+        if include_spells:
+            self.fields['spells'] = SpellSerializer(
+                many=True, context=kwargs['context'])
 
     class Meta:
         model = Spellbook
@@ -33,5 +43,4 @@ class SpellbookSerializer(ModelSerializer):
             'description',
             'classes',
             'user',
-            'spells',
         )
