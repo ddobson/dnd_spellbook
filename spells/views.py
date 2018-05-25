@@ -49,8 +49,10 @@ class SpellView(ReadOnlyModelViewSet):
     serializer_class = SpellSerializer
 
     def get_queryset(self):
-        spells = Spell.objects.all()
+        spells = Spell.objects.filter(spellbooks=self.kwargs['spellbook_pk'])
         class_params = self.request.GET.get('classes')
         classes = class_params.split(',') if class_params else None
 
         return spells.filter(classes__overlap=classes) if classes else spells
+
+# Try with new SpellbookSpellView and see if POST can be made to work
