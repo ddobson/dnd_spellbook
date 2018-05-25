@@ -14,6 +14,24 @@ class SpellbookView(ModelViewSet):
     def get_queryset(self):
         return Spellbook.objects.filter(user=self.request.user)
 
+    def create(self, request):
+        try:
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            self.perform_create(serializer)
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        except (Spell.DoesNotExist, ValidationError) as error:
+            if isinstance(error, Spell.DoesNotExist):
+                error_message = "Spell does not exist."
+            else:
+                error_message = error.message
+
+            return Response(
+                data={'error': error_message},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
     @action(methods=['post'], detail=True)
     def add_spell(self, request, pk=None):
         return self._add_or_remove_spell(request, 'add')

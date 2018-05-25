@@ -1,4 +1,5 @@
-from rest_framework.serializers import (CurrentUserDefault, HiddenField, ModelSerializer)
+from django.db import transaction
+from rest_framework.serializers import CurrentUserDefault, HiddenField, ModelSerializer
 from spells.models.spell import Spell
 from spells.models.spellbook import Spellbook
 
@@ -35,6 +36,15 @@ class SpellbookSerializer(ModelSerializer):
         if include_spells:
             self.fields['spells'] = SpellSerializer(
                 many=True, context=kwargs['context'])
+
+    @transaction.atomic
+    def create(self, validated_data):
+        spellbook = Spellbook.objects.create(**validated_data)
+        if 'spells' in self.initial_data:
+            spell_ids = self.initial_data.get('spells')
+            spells = Spell.objects.filter(pk__in=[spell['id'] for spell in spell_ids])
+            spellbook.spells.add(*spells)
+        return spellbook
 
     class Meta:
         model = Spellbook
