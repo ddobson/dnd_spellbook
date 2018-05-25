@@ -1,16 +1,5 @@
-from django.test import TestCase
-from rest_framework.test import APIClient
-
-from spells.models import Spell
-from user.models import User
-
-
-class APITestCase(TestCase):
-    fixtures = ('spells.json', 'users.json')
-
-    def setUp(self):
-        self.client = APIClient()
-        self.client.force_authenticate(user=User.objects.first())
+from spells.tests.base import APITestCase
+from spells.models.spell import Spell
 
 
 class SpellListTestCase(APITestCase):
