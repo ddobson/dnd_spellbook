@@ -1,5 +1,12 @@
 from django.db import transaction
-from rest_framework.serializers import CurrentUserDefault, HiddenField, ModelSerializer
+from rest_framework.serializers import (
+    CharField,
+    CurrentUserDefault,
+    HiddenField,
+    ListField,
+    ModelSerializer
+)
+from spells.validators import validate_classes
 from spells.models.spell import Spell
 from spells.models.spellbook import Spellbook
 
@@ -26,6 +33,10 @@ class SpellSerializer(ModelSerializer):
 
 class SpellbookSerializer(ModelSerializer):
     user = HiddenField(default=CurrentUserDefault())
+    classes = ListField(
+        child=CharField(),
+        validators=[validate_classes]
+    )
 
     class Meta:
         model = Spellbook
@@ -63,7 +74,7 @@ class SpellbookSerializer(ModelSerializer):
         if 'spells' in self.initial_data:
             spells = self.find_spells(self.initial_data.get('spells'))
             spellbook.spells.add(*spells)
-            return spellbook
+        return spellbook
 
     @transaction.atomic
     def update(self, instance, validated_data):
