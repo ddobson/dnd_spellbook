@@ -19,5 +19,5 @@ def validate_spell_classes(sender, instance, action, reverse, model, pk_set, **k
 
     if invalid_spells:
         raise ValidationError(
-            _('One or more spell classes is not valid for spellbook.')
+            _("One or more of the spells you tried to add are not of valid character classes for this spellbook")  # noqa
         )

@@ -145,6 +145,7 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'EXCEPTION_HANDLER': 'dnd_spellbook.utils.exceptions.dnd_spellbook_app_exception_handler',
     'PAGE_SIZE': 50,
 }
 
