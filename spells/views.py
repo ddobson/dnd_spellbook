@@ -26,8 +26,15 @@ class SpellView(ReadOnlyModelViewSet):
     serializer_class = SpellSerializer
 
     def get_queryset(self):
-        spells = Spell.objects.filter(spellbooks=self.kwargs['spellbook_pk'])
+        spells = Spell.objects.all()
         class_params = self.request.GET.get('classes')
         classes = class_params.split(',') if class_params else None
 
         return spells.filter(classes__overlap=classes) if classes else spells
+
+
+class NestedSpellView(SpellView):
+    def get_queryset(self):
+        spells = super(NestedSpellView, self).get_queryset()
+
+        return spells.filter(spellbooks=self.kwargs['spellbook_pk'])
