@@ -15,12 +15,6 @@ class SpellbookView(ModelViewSet):
     def get_queryset(self):
         return Spellbook.objects.filter(user=self.request.user)
 
-    def create(self, request):
-        return super(SpellbookView, self).create(request)
-
-    def update(self, request, pk=None, partial=None):
-        return super(SpellbookView, self).update(request, pk, partial)
-
 
 class SpellView(ReadOnlyModelViewSet):
     serializer_class = SpellSerializer
