@@ -52,9 +52,9 @@ class SpellbookSerializer(ModelSerializer):
         super(SpellbookSerializer, self).__init__(*args, **kwargs)
 
         request = kwargs['context']['request']
-        include_spells = request.GET.get('include_spells', False)
+        hide_spells = request.GET.get('hide_spells', False)
 
-        if include_spells:
+        if not hide_spells:
             self.fields['spells'] = SpellSerializer(
                 many=True, context=kwargs['context'])
 
