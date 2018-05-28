@@ -9,9 +9,10 @@ class Spell(models.Model):
     casting_time = models.CharField(blank=True, null=True, max_length=128)
     classes = ArrayField(
         models.CharField(max_length=24, blank=True),
+        default=list,
         size=24,
     )
-    components = JSONField()
+    components = JSONField(default=dict)
     description = models.CharField(blank=True, null=True, max_length=10240)
     higher_levels = models.CharField(blank=True, null=True, max_length=1024)
     duration = models.CharField(blank=True, null=True, max_length=128)

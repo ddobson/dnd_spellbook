@@ -14,7 +14,7 @@ class Spellbook(models.Model):
 
     name = models.CharField(blank=False, null=False, default="Generic Spellbook", max_length=64)
     description = models.CharField(blank=True, null=True, max_length=256)
-    classes = ArrayField(models.CharField(max_length=24, blank=True), size=24)
+    classes = ArrayField(models.CharField(max_length=24, blank=True), default=list, size=24)
     user = models.ForeignKey('user.User', on_delete=models.CASCADE, default=DEFAULT_USER_ID)
     spells = models.ManyToManyField(
         Spell,
