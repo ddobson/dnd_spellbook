@@ -56,7 +56,7 @@ class SpellbookSerializer(ModelSerializer):
 
         if not hide_spells:
             self.fields['spells'] = SpellSerializer(
-                many=True, context=kwargs['context'])
+                many=True, read_only=True, context=kwargs['context'])
 
     def find_spells(self, spell_ids):
         spells = set()
