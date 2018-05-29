@@ -37,6 +37,10 @@ class SpellbookSerializer(ModelSerializer):
         child=CharField(),
         validators=[validate_classes]
     )
+    spells = SpellSerializer(
+        many=True,
+        read_only=True,
+    )
 
     class Meta:
         model = Spellbook
@@ -45,6 +49,7 @@ class SpellbookSerializer(ModelSerializer):
             'name',
             'description',
             'classes',
+            'spells',
             'user',
         )
 
@@ -54,9 +59,8 @@ class SpellbookSerializer(ModelSerializer):
         request = kwargs['context']['request']
         hide_spells = request.GET.get('hide_spells', False)
 
-        if not hide_spells:
-            self.fields['spells'] = SpellSerializer(
-                many=True, read_only=True, context=kwargs['context'])
+        if hide_spells:
+            self.fields.pop('spells')
 
     def find_spells(self, spell_ids):
         spells = set()
