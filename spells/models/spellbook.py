@@ -20,6 +20,3 @@ class Spellbook(models.Model):
         Spell,
         related_name="spellbooks",
     )
-
-
-m2m_changed.connect(validate_spell_classes, sender=Spellbook.spells.through)
