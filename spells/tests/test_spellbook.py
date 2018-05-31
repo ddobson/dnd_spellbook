@@ -57,6 +57,12 @@ class SpellbookRetrieveTestCase(APITestCase):
         self.assertEqual(response.data['name'], self.spellbook.name)
         self.assertIsNone(response.data.pop('spells', None))
 
+    def test_cannot_view_spellbook_owned_by_another_user(self):
+        self.client.force_authenticate(user=self.secondary_user)
+        response = self.client.get('/api/spellbooks/{}/'.format(self.spellbook.pk))
+
+        self.assertEqual(response.status_code, 404)
+
 
 class SpellbookCreateTestCase(APITestCase):
     def setUp(self):
@@ -187,3 +193,37 @@ class SpellbookUpdateTestCase(APITestCase):
 
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.data['spells'][0], const.SPELL_DOES_NOT_CONTAIN_ID)
+
+    def test_cannot_update_spellbook_owned_by_another_user(self):
+        update_data = {'name': "Brock Grillz"}
+        self.client.force_authenticate(user=self.secondary_user)
+        response = self.client.patch('/api/spellbooks/{}/'.format(self.spellbook.pk), update_data, 'json')
+
+        self.assertEqual(response.status_code, 404)
+
+
+class SpellbookDestroyTestCase(APITestCase):
+    def setUp(self):
+        super(SpellbookDestroyTestCase, self).setUp()
+
+        self.spellbook = Spellbook.objects.create(
+            name="Gelabrous Finn",
+            description="Healbot McHeals",
+            classes=["cleric"],
+            user=self.user
+        )
+        self.spellbook.spells.set(Spell.objects.filter(classes__contains=["cleric"], level__lte=2)[:10])
+        self.pk_to_destroy = self.spellbook.pk
+
+    def test_spellbook_destroy(self):
+        response = self.client.delete('/api/spellbooks/{}/'.format(self.spellbook.pk))
+
+        self.assertEqual(response.status_code, 204)
+        with self.assertRaises(Spellbook.DoesNotExist):
+            Spellbook.objects.get(pk=self.pk_to_destroy)
+
+    def test_cannot_destroy_spellbook_owned_by_another_user(self):
+        self.client.force_authenticate(user=self.secondary_user)
+        response = self.client.delete('/api/spellbooks/{}/'.format(self.spellbook.pk))
+
+        self.assertEqual(response.status_code, 404)
