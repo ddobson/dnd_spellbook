@@ -75,48 +75,36 @@ class SpellbookSerializer(serializers.ModelSerializer):
         validators.validate_contains_id(value)
         return value
 
-    def validate_spell_classes(self, spellbook, spells):
-        validators.validate_spell_classes(spellbook, spells)
-        return spellbook
-
-    def find_spells(self, spell_ids):
+    def find_spells_from_validated_data(self, spell_ids):
         spells = set()
         for spell in spell_ids:
             spells.add(Spell.objects.get(pk=spell['id']))
         return spells
-
-    def process_spellbook_spell_updates(self, spellbook, request_spells_set, instance_spells_set):
-        self.validate_spell_classes(spellbook, request_spells_set)
-        spellbook.spells.add(*request_spells_set.difference(instance_spells_set))
-        spellbook.spells.remove(*instance_spells_set.difference(request_spells_set))
 
     @transaction.atomic
     def create(self, validated_data):
         validated_spells = validated_data.pop('spells')
         spellbook = Spellbook.objects.create(**validated_data)
         if validated_spells:
-            spells = self.find_spells(validated_spells)
-            self.validate_spell_classes(spellbook, spells)
-            spellbook.spells.add(*spells)
+            spells = self.find_spells_from_validated_data(validated_spells)
+            spellbook.process_spellbook_spell_updates(spells)
         return spellbook
 
     @transaction.atomic
-    def update(self, instance, validated_data):
-        # Remove any spells that are no longer vaild when an update triggers a class change
+    def update(self, spellbook, validated_data):
+        # Remove any spells that are no longer valid when an update triggers a class change
         if validated_data.get('classes'):
-            spells_to_remove = instance.spells.exclude(classes__contains=validated_data.get('classes'))
-            if spells_to_remove.exists():
-                instance.spells.remove(*spells_to_remove)
+            spellbook.remove_existing_spells_on_class_list_update(validated_data.get('classes'))
 
         # Handle updates to the spellbooks spell list w/ validation
         if validated_data.get('spells'):
             validated_spells = validated_data.pop('spells')
-            Spellbook.objects.filter(pk=instance.pk).update(**validated_data)
-            request_spells_set = self.find_spells(validated_spells)
-            instance_spells_set = set(instance.spells.all())
-            self.process_spellbook_spell_updates(instance, request_spells_set, instance_spells_set)
+            Spellbook.objects.filter(pk=spellbook.pk).update(**validated_data)
+            request_spells_set = self.find_spells_from_validated_data(validated_spells)
+            instance_spells_set = set(spellbook.spells.all())
+            spellbook.process_spellbook_spell_updates(request_spells_set)
         else:
-            Spellbook.objects.filter(pk=instance.pk).update(**validated_data)
-            instance.refresh_from_db()
+            Spellbook.objects.filter(pk=spellbook.pk).update(**validated_data)
+            spellbook.refresh_from_db()
 
-        return instance
+        return spellbook
