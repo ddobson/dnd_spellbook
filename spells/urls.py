@@ -1,12 +1,12 @@
 from django.urls import include, re_path
-from spells.views import SpellbookView, SpellView, NestedSpellView
+from spells import views
 from rest_framework_nested import routers
 
-router = routers.SimpleRouter()
-router.register(r'spells', SpellView, base_name="spells")
-router.register(r'spellbooks', SpellbookView, base_name="spellbooks")
+router = routers.DefaultRouter()
+router.register(r'spells', views.SpellView, base_name='spells')
+router.register(r'spellbooks', views.SpellbookView, base_name='spellbooks')
 
-spellbooks_router = routers.NestedSimpleRouter(router, r'spellbooks', lookup='spellbook')
-spellbooks_router.register(r'spells', NestedSpellView,  base_name='spellbook-spells')
+spellbooks_router = routers.NestedDefaultRouter(router, r'spellbooks', lookup='spellbook')
+spellbooks_router.register(r'spells', views.NestedSpellView,  base_name='spellbook-spells')
 
 urlpatterns = router.urls + spellbooks_router.urls
