@@ -4,7 +4,7 @@ from user.models import User
 
 
 class APITestCase(TestCase):
-    fixtures = ('spells.json', 'users.json')
+    fixtures = ('spells.json', 'users.json', 'spellbooks.json')
 
     def setUp(self):
         self.user = User.objects.create(
