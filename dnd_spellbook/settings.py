@@ -45,7 +45,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_nested',
     'djoser',
-    'user',
+    'users',
     'spells',
 ]
 
@@ -133,7 +133,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-AUTH_USER_MODEL = 'user.User'
+AUTH_USER_MODEL = 'users.User'
 
 # Django REST Framework Settings
 
@@ -153,5 +153,5 @@ REST_FRAMEWORK = {
 
 JWT_AUTH = {
     'JWT_EXPIRATION_DELTA': datetime.timedelta(hours=2),
-    'JWT_GET_USER_SECRET_KEY': 'user.models.jwt_get_secret_key',
+    'JWT_GET_USER_SECRET_KEY': 'users.models.jwt_get_secret_key',
 }
