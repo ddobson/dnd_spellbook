@@ -1,6 +1,6 @@
 from django.db import transaction
 from rest_framework import serializers, exceptions
-from dnd_spellbook.utils import constants
+from dnd_spellbook import constants
 from spells import validators
 from spells.models.spell import Spell
 from spells.models.spellbook import Spellbook

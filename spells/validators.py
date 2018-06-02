@@ -1,18 +1,18 @@
 from rest_framework import serializers
-from dnd_spellbook.utils import constants
+from dnd_spellbook import constants as const
 from spells.models.spell import Spell
 
 
 def validate_contains_id(value):
     for spell in value:
         if not spell.get('id', None):
-            raise serializers.ValidationError(constants.SPELL_DOES_NOT_CONTAIN_ID)
+            raise serializers.ValidationError(const.SPELL_DOES_NOT_CONTAIN_ID)
 
 
 def validate_classes(values):
     for character_class in values:
-        if character_class not in constants.VALID_CHARACTER_CLASSES:
-            raise serializers.ValidationError(constants.CLASSES_VALIDATION_ERROR)
+        if character_class not in const.VALID_CHARACTER_CLASSES:
+            raise serializers.ValidationError(const.CLASSES_VALIDATION_ERROR)
 
 
 def validate_spell_classes(func):
@@ -30,7 +30,7 @@ def validate_spell_classes(func):
 
         if invalid_spells:
             raise serializers.ValidationError(
-                {'spells': [constants.SPELLBOOK_SPELL_CLASS_VALIDATION_ERROR]}
+                {'spells': [const.SPELLBOOK_SPELL_CLASS_VALIDATION_ERROR]}
             )
 
         return func(spellbook, spells, *args, **kwargs)

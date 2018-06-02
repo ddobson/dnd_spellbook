@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.views import exception_handler
 from spells.models.spell import Spell
 from spells.views import SpellbookView
-from . import constants as const
+from dnd_spellbook import constants as const
 
 
 def dnd_spellbook_app_exception_handler(exc, context):
