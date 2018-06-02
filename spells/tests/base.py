@@ -1,6 +1,6 @@
 from django.test import TestCase
 from rest_framework.test import APIClient
-from user.models import User
+from users.models import User
 
 
 class APITestCase(TestCase):
