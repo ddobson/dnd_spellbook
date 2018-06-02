@@ -22,3 +22,15 @@ class Spell(models.Model):
     ritual = models.BooleanField(default=False)
     school = models.CharField(blank=True, null=True, max_length=128)
     spell_type = models.CharField(blank=True, null=True, max_length=128)
+
+    @classmethod
+    def spell_queryset_from_request_data(cls, validated_spell_request_data):
+        spells_ids = [spell['id'] for spell in validated_spell_request_data]
+        spells = cls.objects.filter(pk__in=spells_ids)
+        if not spells.exists() or len(spells) != len(spells_ids):
+            raise cls.DoesNotExist()
+        return spells
+
+    @classmethod
+    def spell_list_from_request_data(cls, validated_spell_request_data):
+        return [spell for spell in cls.spell_queryset_from_request_data(validated_spell_request_data)]

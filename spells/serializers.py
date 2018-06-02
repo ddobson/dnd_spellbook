@@ -1,5 +1,5 @@
 from django.db import transaction
-from rest_framework import serializers
+from rest_framework import serializers, exceptions
 from dnd_spellbook.utils import constants
 from spells import validators
 from spells.models.spell import Spell
@@ -75,19 +75,13 @@ class SpellbookSerializer(serializers.ModelSerializer):
         validators.validate_contains_id(value)
         return value
 
-    def find_spells_from_validated_data(self, spell_ids):
-        spells = set()
-        for spell in spell_ids:
-            spells.add(Spell.objects.get(pk=spell['id']))
-        return spells
-
     @transaction.atomic
     def create(self, validated_data):
         validated_spells = validated_data.pop('spells')
         spellbook = Spellbook.objects.create(**validated_data)
         if validated_spells:
-            spells = self.find_spells_from_validated_data(validated_spells)
-            spellbook.process_spellbook_spell_updates(spells)
+            spells = Spell.spell_queryset_from_request_data(validated_spells)
+            spellbook.process_spellbook_spell_additions(spells)
         return spellbook
 
     @transaction.atomic
@@ -100,9 +94,9 @@ class SpellbookSerializer(serializers.ModelSerializer):
         if validated_data.get('spells'):
             validated_spells = validated_data.pop('spells')
             Spellbook.objects.filter(pk=spellbook.pk).update(**validated_data)
-            request_spells_set = self.find_spells_from_validated_data(validated_spells)
-            instance_spells_set = set(spellbook.spells.all())
-            spellbook.process_spellbook_spell_updates(request_spells_set)
+            request_spells = Spell.spell_queryset_from_request_data(validated_spells)
+            current_spells = spellbook.spells.all()
+            spellbook.update_spellbook_spells_by_difference(request_spells, current_spells)
         else:
             Spellbook.objects.filter(pk=spellbook.pk).update(**validated_data)
             spellbook.refresh_from_db()

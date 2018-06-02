@@ -15,19 +15,23 @@ def validate_classes(values):
             raise serializers.ValidationError(constants.CLASSES_VALIDATION_ERROR)
 
 
-def validate_spell_classes(spellbook, spells):
+def validate_spell_classes(func):
     def any_in(a, b):
         return any(i in b for i in a)
 
-    spellbook.refresh_from_db()
-    instance_spells = spellbook.spells.all()
-    invalid_spells = []
+    def wrapper(spellbook, spells, *args, **kwargs):
+        spellbook.refresh_from_db()
+        instance_spells = spellbook.spells.all()
+        invalid_spells = []
 
-    for spell in spells:
-        if not any_in(spell.classes, spellbook.classes):
-            invalid_spells.append(spell)
+        for spell in spells:
+            if not any_in(spell.classes, spellbook.classes):
+                invalid_spells.append(spell)
 
-    if invalid_spells:
-        raise serializers.ValidationError(
-            {'spells': [constants.SPELLBOOK_SPELL_CLASS_VALIDATION_ERROR]}
-        )
+        if invalid_spells:
+            raise serializers.ValidationError(
+                {'spells': [constants.SPELLBOOK_SPELL_CLASS_VALIDATION_ERROR]}
+            )
+
+        return func(spellbook, spells, *args, **kwargs)
+    return wrapper

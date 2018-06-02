@@ -19,14 +19,23 @@ class Spellbook(models.Model):
         related_name="spellbooks",
     )
 
-    def process_spellbook_spell_updates(self, request_spells_set):
-        current_spell_set = set(self.spells.all())
-        validate_spell_classes(self, request_spells_set)
-        self.spells.add(*request_spells_set.difference(current_spell_set))
-        self.spells.remove(*current_spell_set.difference(request_spells_set))
+    @validators.validate_spell_classes
+    def process_spellbook_spell_additions(self, spells):
+        self.spells.add(*spells)
+        return self
+
+    def process_spellbook_spell_removals(self, spells):
+        self.spells.remove(*spells)
+        return self
+
+    def update_spellbook_spells_by_difference(self, request_spells, current_spells):
+        spell_additions = request_spells.difference(current_spells)
+        spell_removals = current_spells.difference(request_spells)
+        self.process_spellbook_spell_additions(spell_additions)
+        self.process_spellbook_spell_removals(spell_removals)
         return self
 
     def remove_existing_spells_on_class_list_update(self, classes_list):
         spells_to_remove = self.spells.exclude(classes__contains=classes_list)
-        self.spells.remove(*spells_to_remove)
+        self.process_spellbook_spell_removals(spells_to_remove)
         return self
