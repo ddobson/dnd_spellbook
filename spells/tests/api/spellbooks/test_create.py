@@ -1,4 +1,4 @@
-from dnd_spellbook.utils import constants as const
+from dnd_spellbook import constants as const
 from rest_framework import status
 from spells.tests.base import APITestCase
 from spells.models.spell import Spell
