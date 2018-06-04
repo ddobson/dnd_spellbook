@@ -1,10 +1,10 @@
 from django.test import TestCase
 from rest_framework.test import APIClient
-from user.models import User
+from users.models import User
 
 
 class APITestCase(TestCase):
-    fixtures = ('spells.json', 'users.json')
+    fixtures = ('spells.json', 'users.json', 'spellbooks.json')
 
     def setUp(self):
         self.user = User.objects.create(

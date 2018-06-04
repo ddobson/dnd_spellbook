@@ -1,0 +1,32 @@
+[
+  {
+    "pk": 1,
+    "model": "spells.spellbook",
+    "fields": {
+      "name": "Skorn",
+      "description": "Full plate on a boat",
+      "classes": ["paladin"],
+      "spells": []
+    }
+  },
+  {
+    "pk": 2,
+    "model": "spells.spellbook",
+    "fields": {
+      "name": "Daz Doodle",
+      "description": "Badass gnome sorcerer",
+      "classes": ["sorcerer"],
+      "spells": []
+    }
+  },
+  {
+    "pk": 3,
+    "model": "spells.spellbook",
+    "fields": {
+      "name": "Theoden King",
+      "description": "Best name ever",
+      "classes": ["cleric"],
+      "spells": []
+    }
+  }
+]
