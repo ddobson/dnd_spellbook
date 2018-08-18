@@ -1,4 +1,6 @@
-from django.shortcuts import get_object_or_404
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404, render
+from django.views import View
 from rest_framework import exceptions
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -49,3 +51,11 @@ class NestedSpellView(SpellView):
                 return Response(status=204)
         else:
             raise exceptions.NotFound(detail="Spell not found")
+
+
+class SpellbookSpellPdf(View):
+    def get(self, request, id):
+        spellbook = get_object_or_404(Spellbook, pk=id)
+        context = {'spellbook': spellbook}
+
+        return render(request, 'spellbook_pdf.html', context)
