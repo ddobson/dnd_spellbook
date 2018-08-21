@@ -1,13 +1,12 @@
-from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.views import View
-from rest_framework import exceptions
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
-from spells.models.spell import Spell
-from spells.models.spellbook import Spellbook
-from spells.serializers import SpellbookSerializer, SpellSerializer
+from .models import Spell
+from .models import Spellbook
+from .serializers import SpellbookSerializer, SpellSerializer
+from .services.spellbook_service import SpellbookService
 
 
 class SpellbookView(ModelViewSet):
@@ -21,41 +20,38 @@ class SpellView(ReadOnlyModelViewSet):
     serializer_class = SpellSerializer
 
     def get_queryset(self):
-        spells = Spell.objects.all().order_by('level', 'name')
-        class_params = self.request.GET.get('classes')
-        classes = class_params.split(',') if class_params else None
+        spells = Spell.objects.order_by("level", "name")
+        class_params = self.request.GET.get("classes")
+        classes = class_params.split(",") if class_params else None
         return spells.filter(classes__overlap=classes) if classes else spells
 
 
 class NestedSpellView(SpellView):
-    spellbook = None
-
     def get_queryset(self):
         # Return a 404 if the requesting user does not own the spellbook
-        if not self.spellbook:
-            self.spellbook = get_object_or_404(Spellbook, pk=self.kwargs['spellbook_pk'], user=self.request.user)
+        spellbook = get_object_or_404(
+            Spellbook, pk=self.kwargs["spellbook_pk"], user=self.request.user
+        )
         spells = super(NestedSpellView, self).get_queryset()
-        return spells.filter(spellbooks=self.spellbook.pk)
+        return spells.filter(spellbooks=spellbook.pk)
 
-    @action(methods=['post', 'delete'], detail=True)
+    @action(methods=["post", "delete"], detail=True)
     def relationship(self, request, spellbook_pk=None, pk=None):
-        self.spellbook = get_object_or_404(Spellbook, pk=spellbook_pk, user=self.request.user)
-        spells = Spell.objects.filter(pk=pk)
+        spellbook = get_object_or_404(Spellbook, pk=spellbook_pk, user=self.request.user)
+        spell = get_object_or_404(Spell, pk=pk)
+        sb_service = SpellbookService(spellbook)
 
-        if spells.exists():
-            if request.method == 'POST':
-                self.spellbook.process_spellbook_spell_additions(spells)
-                return Response(status=201)
-            else:
-                self.spellbook.process_spellbook_spell_removals(spells)
-                return Response(status=204)
-        else:
-            raise exceptions.NotFound(detail="Spell not found")
+        if request.method == "POST":
+            sb_service.add_spells([spell])
+            return Response(status=201)
+
+        sb_service.remove_spells([spell])
+        return Response(status=204)
 
 
 class SpellbookSpellPdf(View):
     def get(self, request, id):
         spellbook = get_object_or_404(Spellbook, pk=id)
-        context = {'spellbook': spellbook}
+        context = {"spellbook": spellbook}
 
-        return render(request, 'spellbook_pdf.html', context)
+        return render(request, "spellbook_pdf.html", context)

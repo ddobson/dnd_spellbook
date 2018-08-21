@@ -1,16 +1,17 @@
-from django.db import models
+from django.core.cache import cache
+from django.db import connection, models
 from django.contrib.postgres.fields import ArrayField, JSONField
 
 
 class Spell(models.Model):
+    DISTINCT_CLASS_CACHE_KEY = "distinct_spell_classes"
+
     class Meta:
-        ordering = ['id']
+        ordering = ["id"]
 
     casting_time = models.CharField(blank=True, null=True, max_length=128)
     classes = ArrayField(
-        models.CharField(max_length=24, blank=True),
-        default=list,
-        size=24,
+        models.CharField(max_length=24, blank=True), default=list, size=24
     )
     components = JSONField(default=dict)
     description = models.CharField(blank=True, null=True, max_length=10240)
@@ -24,13 +25,20 @@ class Spell(models.Model):
     spell_type = models.CharField(blank=True, null=True, max_length=128)
 
     @classmethod
-    def spell_queryset_from_request_data(cls, validated_spell_request_data):
-        spells_ids = [spell['id'] for spell in validated_spell_request_data]
-        spells = cls.objects.filter(pk__in=spells_ids)
-        if not spells.exists() or len(spells) != len(spells_ids):
-            raise cls.DoesNotExist()
-        return spells
+    def distinct_classes(cls, force=False):
+        def get_distinct_classes():
+            cursor = connection.cursor()
+            raw_query = """SELECT UNNEST(spell_classes.classes) as distinct_classes
+                FROM (SELECT classes FROM spells_spell) AS spell_classes GROUP BY distinct_classes;
+            """
+            cursor.execute(raw_query)
+            return [row[0] for row in cursor]
 
-    @classmethod
-    def spell_list_from_request_data(cls, validated_spell_request_data):
-        return [spell for spell in cls.spell_queryset_from_request_data(validated_spell_request_data)]
+        if force:
+            cache.delete(cls.DISTINCT_CLASS_CACHE_KEY)
+
+        return cache.get_or_set(cls.DISTINCT_CLASS_CACHE_KEY, get_distinct_classes)
+
+    def save(self, *args, **kwargs):
+        cache.delete(self.DISTINCT_CLASS_CACHE_KEY)
+        return super().save(*args, **kwargs)
