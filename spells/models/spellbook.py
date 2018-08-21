@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
 from dnd_spellbook import constants as const
-from spells import validators
 from spells.models.spell import Spell
 
 

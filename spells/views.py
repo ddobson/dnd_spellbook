@@ -1,7 +1,5 @@
-from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.views import View
-from rest_framework import exceptions
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
@@ -28,8 +26,6 @@ class SpellView(ReadOnlyModelViewSet):
 
 
 class NestedSpellView(SpellView):
-    spellbook = None
-
     def get_queryset(self):
         # Return a 404 if the requesting user does not own the spellbook
         if not self.spellbook:
@@ -37,7 +33,7 @@ class NestedSpellView(SpellView):
                 Spellbook, pk=self.kwargs["spellbook_pk"], user=self.request.user
             )
         spells = super(NestedSpellView, self).get_queryset()
-        return spells.filter(spellbooks=self.spellbook.pk)
+        return spells.filter(spellbooks=spellbook.pk)
 
     @action(methods=["post", "delete"], detail=True)
     def relationship(self, request, spellbook_pk=None, pk=None):
